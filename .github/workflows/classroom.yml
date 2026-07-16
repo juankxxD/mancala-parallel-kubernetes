@@ -1,0 +1,83 @@
+name: Autograding Tests
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  autograding:
+    name: Autograding
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Solución local (Docker Compose + Kubernetes local)
+        id: solucion-local
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Solución local (Docker Compose + Kubernetes local)
+          setup-command: ""
+          command: |
+            bash -c '
+              set -e
+              test -s docs/02-motor.md            && [ "$(wc -c < docs/02-motor.md)" -gt 3500 ]
+              test -s docs/03-paralelizacion.md   && [ "$(wc -c < docs/03-paralelizacion.md)" -gt 4000 ]
+              test -s docs/04-despliegue-local.md && [ "$(wc -c < docs/04-despliegue-local.md)" -gt 4500 ]
+              test -f motor/Dockerfile
+              test -f backend/Dockerfile
+              test -f frontend/Dockerfile
+              test -f deploy/local/docker-compose.yml || test -f docker-compose.yml
+              find deploy/local -maxdepth 3 -type f \( -name "*.yaml" -o -name "*.yml" \) | grep -v -E "(/README|/docker-compose)" | grep -q .
+            '
+          timeout: 1
+          max-score: 50
+
+      - name: Solución en la nube (Kubernetes gestionado)
+        id: solucion-nube
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Solución en la nube (Kubernetes gestionado)
+          setup-command: ""
+          command: |
+            bash -c '
+              set -e
+              test -s docs/01-arquitectura.md         && [ "$(wc -c < docs/01-arquitectura.md)" -gt 4000 ]
+              test -s docs/05-despliegue-nube.md      && [ "$(wc -c < docs/05-despliegue-nube.md)" -gt 4500 ]
+              test -s docs/07-analisis-comparativo.md && [ "$(wc -c < docs/07-analisis-comparativo.md)" -gt 4000 ]
+              find deploy/cloud -maxdepth 3 -type f \( -name "*.yaml" -o -name "*.yml" \) | grep -v "/README" | grep -q .
+            '
+          timeout: 1
+          max-score: 50
+
+      - name: Informe y CI/CD
+        id: informe-cicd
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Informe y CI/CD
+          setup-command: ""
+          command: |
+            bash -c '
+              set -e
+              test -s docs/README.md           && [ "$(wc -c < docs/README.md)" -gt 2500 ]
+              test -s docs/06-cicd.md          && [ "$(wc -c < docs/06-cicd.md)" -gt 4000 ]
+              test -s docs/08-conclusiones.md  && [ "$(wc -c < docs/08-conclusiones.md)" -gt 2000 ]
+              find .github/workflows -maxdepth 2 -type f \( -name "*.yaml" -o -name "*.yml" \) ! -name "classroom.yml" | grep -q .
+            '
+          timeout: 1
+          max-score: 50
+
+      - name: Reporte a Classroom
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          SOLUCION-LOCAL_RESULTS: "${{steps.solucion-local.outputs.result}}"
+          SOLUCION-NUBE_RESULTS: "${{steps.solucion-nube.outputs.result}}"
+          INFORME-CICD_RESULTS: "${{steps.informe-cicd.outputs.result}}"
+        with:
+          runners: solucion-local,solucion-nube,informe-cicd

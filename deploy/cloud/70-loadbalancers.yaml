@@ -1,0 +1,25 @@
+# Servicios LoadBalancer para exponer la app en la nube con IP pública.
+#
+# La especificación admite exponer el backend "vía Service de tipo LoadBalancer
+# o vía Ingress". Aquí se usan Services LoadBalancer porque en GKE dan una IP
+# pública directa sin instalar un controlador de Ingress ni requerir un dominio,
+# lo que simplifica las evidencias y la prueba de carga (docs/07).
+#
+# El balanceo entre las réplicas del backend lo hace el propio Service
+# (selector app: backend → reparte entre los pods del Deployment).
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-lb
+  namespace: mancala
+  labels:
+    app: frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

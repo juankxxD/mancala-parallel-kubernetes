@@ -1,0 +1,52 @@
+# Docker Compose para el despliegue local de los 3 contenedores.
+#
+#   docker compose up --build
+#
+# - motor:    servidor HTTP del motor en :9000 (red interna del compose).
+# - backend:  FastAPI en :8000, delega al motor por HTTP.
+# - frontend: nginx en :8080 -> :80, consume el backend.
+
+services:
+  motor:
+    build:
+      context: ../../motor
+    image: mancala-motor:dev
+    environment:
+      OMP_NUM_THREADS: "4"
+      MOTOR_PORT: "9000"
+      MOTOR_WORKERS: "8"
+    # No exponemos el motor al host: solo accesible desde la red del compose.
+    expose:
+      - "9000"
+    # El healthcheck en compose es opcional: el /readyz del backend ya
+    # verifica que el motor sea alcanzable. Lo omitimos aquí porque la
+    # imagen runtime es debian-slim sin curl/wget/bash. En Kubernetes
+    # usamos httpGet probe (ver deploy/local/k8s/20-motor.yaml).
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ../../backend
+    image: mancala-backend:dev
+    environment:
+      OMP_NUM_THREADS: "4"
+      MOTOR_HOST: "motor"
+      MOTOR_PORT: "9000"
+      MOTOR_TIMEOUT_S: "60"
+      ALLOWED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
+    ports:
+      - "8000:8000"
+    depends_on:
+      motor:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../../frontend
+    image: mancala-frontend:dev
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

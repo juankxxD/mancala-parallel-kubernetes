@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mancala — Kalah(6,4) vs. AI</title>
+    <link rel="stylesheet" href="style.css?v=4" />
+</head>
+<body>
+    <header class="topbar">
+        <h1>Mancala <span class="muted">— Kalah(6,4)</span></h1>
+        <div class="status" id="status">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-text">Tu turno</span>
+        </div>
+    </header>
+
+    <main class="layout">
+        <!-- ============ TABLERO ============ -->
+        <section class="board-area">
+            <div class="player-tag player-tag-top">
+                <span class="badge">Bot</span>
+                <span class="player-side">Jugador 1</span>
+                <span class="player-score" id="score-p1">0</span>
+            </div>
+
+            <div class="board" id="board">
+                <!-- Kalaha izquierda (jugador 1) -->
+                <button class="kalaha kalaha-left" data-idx="13" disabled
+                        aria-label="Kalaha del jugador 1">
+                    <span class="kalaha-count" id="pit-13">0</span>
+                    <span class="kalaha-label">P1</span>
+                </button>
+
+                <!-- Centro: 2 filas de 6 hoyos -->
+                <div class="rows">
+                    <div class="row row-top" id="row-top">
+                        <!-- pits 12..7 derecha→izquierda (antihorario visual) -->
+                        <button class="pit pit-rival" data-idx="12">
+                            <span class="pit-count" id="pit-12">0</span>
+                            <span class="pit-label">12</span>
+                        </button>
+                        <button class="pit pit-rival" data-idx="11">
+                            <span class="pit-count" id="pit-11">0</span>
+                            <span class="pit-label">11</span>
+                        </button>
+                        <button class="pit pit-rival" data-idx="10">
+                            <span class="pit-count" id="pit-10">0</span>
+                            <span class="pit-label">10</span>
+                        </button>
+                        <button class="pit pit-rival" data-idx="9">
+                            <span class="pit-count" id="pit-9">0</span>
+                            <span class="pit-label">9</span>
+                        </button>
+                        <button class="pit pit-rival" data-idx="8">
+                            <span class="pit-count" id="pit-8">0</span>
+                            <span class="pit-label">8</span>
+                        </button>
+                        <button class="pit pit-rival" data-idx="7">
+                            <span class="pit-count" id="pit-7">0</span>
+                            <span class="pit-label">7</span>
+                        </button>
+                    </div>
+                    <div class="row row-bottom" id="row-bottom">
+                        <!-- pits 0..5 izquierda→derecha -->
+                        <button class="pit pit-own" data-idx="0">
+                            <span class="pit-count" id="pit-0">0</span>
+                            <span class="pit-label">0</span>
+                        </button>
+                        <button class="pit pit-own" data-idx="1">
+                            <span class="pit-count" id="pit-1">0</span>
+                            <span class="pit-label">1</span>
+                        </button>
+                        <button class="pit pit-own" data-idx="2">
+                            <span class="pit-count" id="pit-2">0</span>
+                            <span class="pit-label">2</span>
+                        </button>
+                        <button class="pit pit-own" data-idx="3">
+                            <span class="pit-count" id="pit-3">0</span>
+                            <span class="pit-label">3</span>
+                        </button>
+                        <button class="pit pit-own" data-idx="4">
+                            <span class="pit-count" id="pit-4">0</span>
+                            <span class="pit-label">4</span>
+                        </button>
+                        <button class="pit pit-own" data-idx="5">
+                            <span class="pit-count" id="pit-5">0</span>
+                            <span class="pit-label">5</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kalaha derecha (jugador 0 = tú) -->
+                <button class="kalaha kalaha-right" data-idx="6" disabled
+                        aria-label="Kalaha del jugador 0">
+                    <span class="kalaha-count" id="pit-6">0</span>
+                    <span class="kalaha-label">Tú</span>
+                </button>
+            </div>
+
+            <div class="player-tag player-tag-bottom">
+                <span class="badge badge-you">Tú</span>
+                <span class="player-side">Jugador 0</span>
+                <span class="player-score" id="score-p0">0</span>
+            </div>
+        </section>
+
+        <!-- ============ PANEL DE CONTROL ============ -->
+        <aside class="sidebar">
+            <section class="card">
+                <h2>Configuración del bot</h2>
+                <label>
+                    Algoritmo
+                    <input id="algo-label" type="text" value="Alfa-Beta (Minimax + poda)" readonly />
+                </label>
+                <label>
+                    Profundidad
+                    <input id="depth" type="number" value="10" min="1" max="20" />
+                </label>
+                <label>
+                    Hilos OpenMP
+                    <input id="threads" type="number" value="4" min="1" max="32" />
+                </label>
+                <button id="btn-reset" class="btn btn-secondary btn-block">Reiniciar partida</button>
+            </section>
+
+            <section class="card">
+                <h2>Último movimiento del bot</h2>
+                <dl class="stats" id="stats">
+                    <dt>Movimiento</dt><dd id="stat-move">—</dd>
+                    <dt>Evaluación</dt><dd id="stat-eval">—</dd>
+                    <dt>Tiempo</dt><dd id="stat-time">—</dd>
+                    <dt>Detalles</dt><dd id="stat-extra">—</dd>
+                </dl>
+            </section>
+
+            <section class="card">
+                <h2>Historial</h2>
+                <ol class="log" id="log"></ol>
+            </section>
+        </aside>
+    </main>
+
+    <!-- ============ MODAL FIN DE JUEGO ============ -->
+    <div class="overlay hidden" id="overlay">
+        <div class="modal">
+            <h2 id="modal-title">Fin de la partida</h2>
+            <p id="modal-text"></p>
+            <div class="modal-actions">
+                <button class="btn" id="modal-replay">Jugar otra</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js?v=4"></script>
+</body>
+</html>

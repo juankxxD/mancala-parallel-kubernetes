@@ -1,0 +1,7 @@
+# Excluir cachés y entornos virtuales del contexto de la imagen.
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.DS_Store

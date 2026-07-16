@@ -1,0 +1,6 @@
+# No enviar artefactos de build ni basura al contexto de la imagen.
+build/
+out/
+*.o
+*.a
+.DS_Store

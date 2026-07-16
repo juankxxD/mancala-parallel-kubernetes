@@ -1,0 +1,43 @@
+# Ingress que enruta el frontend en / y la API en /api.
+# El backend del Service maneja el balanceo entre las 3 réplicas.
+#
+# Para EKS: la annotation kubernetes.io/ingress.class apunta a "alb".
+# Para AKS: usar "azure/application-gateway" o ingress-nginx instalado.
+# Para GKE: dejar "gce" (default) o ingress-nginx.
+# Ajustar según el proveedor escogido.
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mancala-ingress
+  namespace: mancala
+  annotations:
+    # AJUSTAR según proveedor:
+    # kubernetes.io/ingress.class: nginx
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-type: ip
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mancala.midominio.cloud
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backend-svc
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-svc
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - mancala.midominio.cloud
+      secretName: mancala-tls   # creado por cert-manager o cargado manualmente

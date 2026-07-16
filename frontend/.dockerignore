@@ -1,0 +1,4 @@
+# Solo se necesitan los estáticos de public/ y la config de nginx.
+node_modules/
+dist/
+.DS_Store

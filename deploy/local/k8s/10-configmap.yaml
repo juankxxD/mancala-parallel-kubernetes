@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mancala-config
+  namespace: mancala
+data:
+  OMP_NUM_THREADS: "4"
+  MOTOR_PORT: "9000"
+  MOTOR_WORKERS: "8"
+  MOTOR_TIMEOUT_S: "60"
+  DEFAULT_DEPTH: "12"
+  ALLOWED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"

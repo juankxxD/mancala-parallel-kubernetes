@@ -1,0 +1,79 @@
+# --- C++ / CMake ---
+build/
+out/
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Node / Frontend (por si se usa build) ---
+node_modules/
+dist/
+.npm/
+.parcel-cache/
+
+# --- Editores / IDEs / herramientas ---
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Docker / K8s locales ---
+*.kubeconfig
+.kube/
+
+# --- Secretos y variables de entorno ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Informes compilados (no se versionan según la spec) ---
+*.pdf
+*.docx
+*.odt
+*.rtf
+docs/**/*.pdf
+
+# --- Profiling y benchmarks ---
+*.log
+perf.data
+perf.data.old
+callgrind.out.*
+*.prof
+bench_resultados.md
+motor/bench_resultados.md
+
+# --- Archivos del proyecto que no van al repo ---
+project context/
+Proyecto.pdf

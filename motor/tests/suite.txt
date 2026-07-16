@@ -1,0 +1,29 @@
+# Suite de posiciones de prueba para Kalah(6,4).
+# Formato: 14 enteros (índices 0..13) seguidos del lado al que le toca mover (0/1).
+# Líneas vacías o que empiezan con '#' se ignoran.
+#
+# pos0..pos5 = jugador 0, pos6 = kalaha p0, pos7..pos12 = jugador 1, pos13 = kalaha p1.
+
+# Posición inicial — turno del jugador 0.
+4 4 4 4 4 4 0 4 4 4 4 4 4 0 0
+
+# Apertura típica: jugador 0 jugó hoyo 2, le tocó turno extra y jugó hoyo 0.
+0 0 5 5 5 5 1 4 4 4 4 4 4 0 0
+
+# Media partida con ventaja p0.
+2 3 0 5 1 4 8 3 2 4 0 4 1 5 1
+
+# Media partida con ventaja p1.
+3 1 0 4 2 1 4 5 4 3 1 2 0 9 0
+
+# Posición casi terminal — p0 a punto de cerrar.
+0 0 0 0 0 1 22 4 3 2 1 0 1 4 0
+
+# Posición de captura inminente — turno p0 puede capturar.
+0 0 2 0 0 0 10 0 0 2 1 4 3 6 0
+
+# Tablero con kalahas elevados (mid-late game).
+1 2 0 1 0 3 14 2 0 1 2 0 0 12 1
+
+# Posición forzada: pocos movimientos legales.
+0 0 0 0 1 0 18 0 1 0 0 0 0 28 0

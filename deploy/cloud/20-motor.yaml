@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: motor
+  namespace: mancala
+  labels:
+    app: motor
+    tier: engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: motor
+  template:
+    metadata:
+      labels:
+        app: motor
+    spec:
+      containers:
+        - name: motor
+          # AJUSTAR al registro+tag inmutables (Docker Hub / GHCR / ECR / ACR / GCR).
+          # NO usar 'latest' en producción.
+          image: us-central1-docker.pkg.dev/mi-proyecto-paralelas/mancala-repo/mancala-motor:v1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9000
+          envFrom:
+            - configMapRef:
+                name: mancala-config
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "128Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 1
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: motor-svc
+  namespace: mancala
+spec:
+  type: ClusterIP
+  selector:
+    app: motor
+  ports:
+    - name: http
+      port: 9000
+      targetPort: http

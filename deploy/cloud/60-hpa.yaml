@@ -1,0 +1,23 @@
+# HorizontalPodAutoscaler para el backend.
+# Opcional pero útil para el análisis comparativo: permite estudiar
+# escalado horizontal vs. vertical bajo carga (ver docs/07-analisis-comparativo.md).
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: mancala
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 3
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

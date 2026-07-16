@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: mancala
+  labels:
+    app: backend
+    tier: api
+spec:
+  replicas: 3   # >= 3 réplicas exigidas por la rúbrica
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          # AJUSTAR a tag inmutable en el registro elegido.
+          image: us-central1-docker.pkg.dev/mi-proyecto-paralelas/mancala-repo/mancala-backend:v1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: MOTOR_HOST
+              value: "motor-svc"
+          envFrom:
+            - configMapRef:
+                name: mancala-config
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            failureThreshold: 6
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+  namespace: mancala
+spec:
+  type: ClusterIP   # se expone vía Ingress (ver 50-ingress.yaml)
+  selector:
+    app: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
